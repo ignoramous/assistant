@@ -1,0 +1,6 @@
+fire
+numpy
+torch ~= 2.0.1
+accelerate~=0.20.0
+transformers~=4.30.1
+datasets~=2.12.0
