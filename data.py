@@ -82,63 +82,34 @@ def tokenize_function(
     }
 
 
-# def get_datasets(
-#         datasets=["lima"], 
-#         add_human_assistant_labels=[],
-#         min_length_in_tokens=None, 
-#         max_length_in_tokens=None, 
-#         tokenizer=None,
-#         train=True
-# ):  
-#     registry = TRAIN_REGISTRY if train else None
-#     if tokenizer is None:
-#         if min_length_in_tokens is not None or max_length_in_tokens is not None:
-#             raise ValueError("Cannot specify min_length_in_tokens or max_length_in_tokens without specifying tokenizer.")
+def get_datasets(
+        datasets=["lima"], 
+        train=True
+):  
+    registry = TRAIN_REGISTRY if train else None
     
-#     if datasets == "all":
-#         datasets = list(registry.keys())
+    if datasets == "all":
+        datasets = list(registry.keys())
 
-#     result = {}
+    result = {}
     
-#     # process all datasets to have the same 2 columns: prompt, response
-#     for ds_name in datasets:
-#         if "subset" in registry[ds_name]:
-#             subset = registry[ds_name]["subset"]
-#             loaded = load_dataset(registry[ds_name]["hub_url"], subset, split=registry[ds_name]["split"])
-#         else:
-#             loaded = load_dataset(registry[ds_name]["hub_url"], split=registry[ds_name]["split"])
-#         if registry[ds_name]["filter_fn"] is not None:
-#             loaded = loaded.filter(registry[ds_name]["filter_fn"])
-#         if registry[ds_name]["processing_fn"] is not None:
-#             print(loaded[0].keys())
-#             loaded = loaded.map(registry[ds_name]["processing_fn"], remove_columns=loaded.column_names).filter(
-#                 lambda example: example["preferred"] != "" and example["dispreferred"] != ""
-#             )
-#         result[ds_name] = loaded
-
-#     # add human and assistant to prompt if applicable
-#     for key in result.keys():
-#         if key in add_human_assistant_labels:
-#             result[key] = result[key].map(
-#                 lambda example: {"prompt": add_human_and_assistant_to_prompt(example['prompt'])}
-#             )
-
-#     # filter all datasets for length
-#     if min_length_in_tokens is not None or max_length_in_tokens is not None:
-#         for key in result.keys():
-#             result[key] = result[key].map(
-#                 lambda example: {"length": len(tokenizer(example['prompt']).input_ids) + \
-#                                 max(len(tokenizer(example['preferred']).input_ids), 
-#                                     len(tokenizer(example['dispreferred']).input_ids))},
-#             )
-#             if min_length_in_tokens is not None:
-#                 result[key] = result[key].filter(lambda example: example['length'] >= min_length_in_tokens)
-#             if max_length_in_tokens is not None:
-#                 result[key] = result[key].filter(lambda example: example['length'] <= max_length_in_tokens)
+    # process all datasets to have the same 2 columns: prompt, response
+    for ds_name in datasets:
+        if "subset" in registry[ds_name]:
+            subset = registry[ds_name]["subset"]
+            loaded = load_dataset(registry[ds_name]["hub_url"], subset, split=registry[ds_name]["split"])
+        else:
+            loaded = load_dataset(registry[ds_name]["hub_url"], split=registry[ds_name]["split"])
+        if registry[ds_name]["filter_fn"] is not None:
+            loaded = loaded.filter(registry[ds_name]["filter_fn"])
+        if registry[ds_name]["processing_fn"] is not None:
+            print(loaded[0].keys())
+            loaded = loaded.map(registry[ds_name]["processing_fn"], remove_columns=loaded.column_names)
+        result[ds_name] = loaded
     
-#     for key, dataset in result.items():
-#         print(f"Dataset {key} has {len(dataset)} examples.")
-#     return result
+    for key, dataset in result.items():
+        print(f"Dataset {key} has {len(dataset)} examples.")
+    return result
 
 # def get_train_dataloader(
 #         datasets,
@@ -194,10 +165,12 @@ def prepare_data(
     data_dir: str = 'data',
 ):
      # get LIMA dataset
-    dataset = load_dataset("GAIR/lima", split="train", use_auth_token=hf_hub_token)
+    datasets = get_datasets(
+        datasets=["lima"],
+        train=True
+    )
 
-    # process LIMA dataset
-    dataset = dataset.map(process_lima, remove_columns=dataset.column_names)
+    dataset = datasets["lima"]
 
     # tokenize LIMA dataset
     tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-7b", use_auth_token=hf_hub_token, trust_remote_code=True)
