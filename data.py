@@ -62,7 +62,10 @@ def tokenize_function(
 
         # handle padding, and truncation
         if len(input_ids) < seq_len:
-            input_ids.extend([tokenizer.pad_token_id] * (seq_len - len(input_ids)))
+            pad_token = tokenizer.pad_token_id
+            if pad_token is None: pad_token = tokenizer.eos_token_id
+            
+            input_ids.extend([pad_token] * (seq_len - len(input_ids)))
             attention_mask.extend([0] * (seq_len - len(attention_mask)))
         elif len(input_ids) > seq_len:
             input_ids = input_ids[:seq_len]
