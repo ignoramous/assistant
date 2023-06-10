@@ -48,16 +48,16 @@ def tokenize_function(
             tokenized = tokenizer(message, add_special_tokens=False, padding=False, truncation=False)
             if idx % 2 == 0:
                 # user message ends by prompt for assistant reply. don't calculate loss on user messages.
-                input_ids.extend([tokenized.input_ids, *assistant_tokens])
+                input_ids.extend([*tokenized.input_ids, *assistant_tokens])
                 attention_mask.extend([0] * (len(tokenized.input_ids) + len(assistant_tokens)))
             else:
                 # assistant message ends by prompt for user reply. calculate loss on assistant messages,
                 # including the 'human tokens', since this is how we know the assistant is finished.
-                input_ids.extend([tokenized.input_ids, *human_tokens])
+                input_ids.extend([*tokenized.input_ids, *human_tokens])
                 attention_mask.extend([1] * (len(tokenized.input_ids) + len(human_tokens)))
 
         # assert shapes match
-        assert len(input_ids) == len(attention_mask), "Input ids and attention mask must have the same length."
+        assert len(input_ids) == len(attention_mask), "you done fucked up, cowboy"
 
 
         # handle padding, and truncation
