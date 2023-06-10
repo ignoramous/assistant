@@ -99,12 +99,16 @@ def tokenize_function(
             attention_mask = attention_mask[:seq_len]
         
         # add to list of all input ids/attention masks
-        print(len(input_ids), len(attention_mask))
+        assert len(input_ids) == seq_len, "you done fucked up pad/trunc with targets"
+        assert len(input_ids) == len(targets), "you done fucked up padding and trunc with targets"
+        assert len(input_ids) == len(attention_mask), "you done fucked up pad/trunc with attn mask"
         all_input_ids.append(input_ids)
+        all_targets.append(targets)
         all_attention_masks.append(attention_mask)
 
     return {
         "input_ids": all_input_ids,
+        "targets": all_targets,
         "attention_mask": all_attention_masks,
     }
 
