@@ -95,6 +95,7 @@ def train(
     model.train()
     if accelerator.is_main_process:
         print("Beginning training...")
+    total_tokens = 0
     running_losses = []
     for epoch in range(num_epochs):
         for batch in train_dataloader:
