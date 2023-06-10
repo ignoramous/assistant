@@ -56,6 +56,10 @@ def tokenize_function(
                 input_ids.extend([tokenized.input_ids, *human_tokens])
                 attention_mask.extend([1] * (len(tokenized.input_ids) + len(human_tokens)))
 
+        # assert shapes match
+        assert len(input_ids) == len(attention_mask), "Input ids and attention mask must have the same length."
+
+
         # handle padding, and truncation
         if len(input_ids) < seq_len:
             input_ids.extend([tokenizer.pad_token_id] * (seq_len - len(input_ids)))
