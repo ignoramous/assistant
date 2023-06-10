@@ -3,8 +3,7 @@ import fire
 import torch
 import wandb
 from accelerate import Accelerator
-from transformers import AutoConfig, AutoTokenizer, AutoModelForCausalLM# , BitsAndBytesConfig
-from datasets import load_dataset
+from transformers import AutoConfig, AutoModelForCausalLM# , BitsAndBytesConfig
 
 def train(
     model_name="tiiuae/falcon-7b",
@@ -35,7 +34,7 @@ def train(
     # set up accelerator
     accelerator = Accelerator(
         mixed_precision="bf16",
-        accumulation_steps=effective_batch_size // microbatch_size,
+        gradient_accumulation_steps=effective_batch_size // microbatch_size,
     )
 
     # get train dataloader
