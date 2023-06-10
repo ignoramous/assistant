@@ -47,6 +47,7 @@ def tokenize_function(
     assistant_tokens: list[int] = [5] # falcon >>ANSWER<< token
 ):
     all_input_ids = []
+    all_targets = []
     all_attention_masks = []
     
     for conversation in examples["messages"]:
@@ -58,34 +59,43 @@ def tokenize_function(
             continue
 
         # otherwise, tokenize each message in the conversation.
-        # loss shouldn't be calculated on user messages, this is reflected in the attention mask
+        # loss shouldn't be calculated on user messages, this is reflected in the targets.
         input_ids = [tokenizer.eos_token_id, *human_tokens]
-        attention_mask = [0] * len(input_ids)
+        targets = [-100] * len(input_ids) # we will roll targets over by 1 later
+        attention_mask = [1] * len(input_ids)
         for idx, message in enumerate(conversation):
             tokenized = tokenizer(message, add_special_tokens=False, padding=False, truncation=False)
             if idx % 2 == 0:
                 # user message ends by prompt for assistant reply. don't calculate loss on user messages.
                 input_ids.extend([*tokenized.input_ids, *assistant_tokens])
-                attention_mask.extend([0] * (len(tokenized.input_ids) + len(assistant_tokens)))
+                targets.extend([-100] * (len(tokenized.input_ids) + len(assistant_tokens)))
+                attention_mask.extend([1] * (len(tokenized.input_ids) + len(assistant_tokens)))
             else:
                 # assistant message ends by prompt for user reply. calculate loss on assistant messages,
                 # including the 'human tokens', since this is how we know the assistant is finished.
                 input_ids.extend([*tokenized.input_ids, *human_tokens])
+                targets.extend([*tokenized.input_ids, *human_tokens])
                 attention_mask.extend([1] * (len(tokenized.input_ids) + len(human_tokens)))
 
         # assert shapes match
         assert len(input_ids) == len(attention_mask), "you done fucked up, cowboy"
+        assert len(input_ids) == len(targets), "you done fucked up, cowboy 2"
 
 
         # handle padding, and truncation
-        if len(input_ids) < seq_len:
-            pad_token = tokenizer.pad_token_id
-            if pad_token is None: pad_token = tokenizer.eos_token_id
-            
+        pad_token = tokenizer.pad_token_id
+        if pad_token is None: pad_token = tokenizer.eos_token_id
+
+        if len(input_ids) == seq_len:
+            targets = targets[1:] + [-100]
+        elif len(input_ids) < seq_len:
             input_ids.extend([pad_token] * (seq_len - len(input_ids)))
+            targets.extend([-100] * (seq_len - len(targets) + 1))
+            targets = targets[1:]
             attention_mask.extend([0] * (seq_len - len(attention_mask)))
         elif len(input_ids) > seq_len:
             input_ids = input_ids[:seq_len]
+            targets = targets[1:seq_len+1]
             attention_mask = attention_mask[:seq_len]
         
         # add to list of all input ids/attention masks
@@ -170,6 +180,7 @@ def get_train_datasets(datasets=["lima"]):
 
 def prepare_data(
     datasets=["lima"],
+    tokenizer_name="tiiuae/falcon-7b",
     microbatch_size: int = 4,
     hf_hub_token: str = None,
     data_dir: str = 'data',
@@ -185,7 +196,7 @@ def prepare_data(
     tokenized = {}
 
     # tokenize all datasets
-    tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-7b", use_auth_token=hf_hub_token, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_auth_token=hf_hub_token, trust_remote_code=True)
     
     for key, dataset in datasets.items():
         print(f"Tokenizing {key}...")
@@ -216,7 +227,7 @@ def prepare_data(
         collate_fn=DefaultDataCollator(),
         num_workers=4,
     )
-    torch.save(dataloader, os.path.join(data_dir, "train_dataloader.pt"))
+    torch.save({"datasets": datasets, "dataloader": dataloader}, os.path.join(data_dir, "train_dataloader.pt"))
 
 
 
