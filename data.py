@@ -1,8 +1,10 @@
+import os
 import re
 import fire
-from datasets import load_dataset
-from transformers import AutoTokenizer
-from typing import Any, Callable
+import torch
+from datasets import load_dataset, interleave_datasets
+from transformers import AutoTokenizer, DefaultDataCollator
+from typing import Any
 from functools import partial
 
 # For this training pipeline, preprocessing should simply return a list of strings.
@@ -97,11 +99,8 @@ def tokenize_function(
     }
 
 
-def get_datasets(
-        datasets=["lima"], 
-        train=True
-):  
-    registry = TRAIN_REGISTRY if train else None
+def get_train_datasets(datasets=["lima"]):  
+    registry = TRAIN_REGISTRY
     
     if datasets == "all":
         datasets = list(registry.keys())
@@ -156,13 +155,7 @@ def get_datasets(
 #     else:
 #         interleaved = datasets[list(datasets.keys())[0]]
     
-#     print("Tokenizing...")
-#     tokenized = interleaved.map(
-#         partial(tokenize_function, tokenizer=tokenizer, max_len=seq_len),
-#         batched=True,
-#         batch_size=1000,
-#         remove_columns=interleaved.column_names,
-#     )
+
 
 #     dataloader = torch.utils.data.DataLoader(
 #         tokenized,
@@ -177,11 +170,15 @@ def get_datasets(
 
 def prepare_data(
     datasets=["lima"],
+    microbatch_size: int = 4,
     hf_hub_token: str = None,
     data_dir: str = 'data',
-):
+):  
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+        
      # get LIMA dataset
-    datasets = get_datasets(
+    datasets = get_train_datasets(
         datasets=datasets,
         train=True
     )
@@ -200,9 +197,29 @@ def prepare_data(
             remove_columns=dataset.column_names,
         )
 
-    # summarize results
-    for key, dataset in tokenized.items():
-        print(f"Dataset {key} has {len(dataset)} examples.")
+    # interleave datasets
+    print("Interleaving datasets (this may take a while)...")
+    lengths = [len(dataset) for dataset in tokenized.values()]
+    probabilities = [length / sum(lengths) for length in lengths]
+    print([f"{n}: {l}" for n, l in zip(tokenized.keys(),lengths)])
+    if len(tokenized) > 1:
+        interleaved =  interleave_datasets([d for _, d in tokenized.items()], probabilities=probabilities, seed=42)
+    else:
+        interleaved = tokenized[list(tokenized.keys())[0]]
+
+    # save train dataloader
+    print("Saving train dataloader...")
+    dataloader = torch.utils.data.DataLoader(
+        interleaved,
+        batch_size=microbatch_size,
+        shuffle=True,
+        pin_memory=True,
+        collate_fn=DefaultDataCollator(),
+        num_workers=4,
+    )
+    torch.save(dataloader, os.path.join(data_dir, "train_dataloader.pt"))
+
+
 
 
 if __name__ == '__main__':
