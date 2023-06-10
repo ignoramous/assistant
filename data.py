@@ -176,28 +176,33 @@ def get_datasets(
 #     return dataloader
 
 def prepare_data(
+    datasets=["lima"],
     hf_hub_token: str = None,
     data_dir: str = 'data',
 ):
      # get LIMA dataset
     datasets = get_datasets(
-        datasets=["lima"],
+        datasets=datasets,
         train=True
     )
 
-    dataset = datasets["lima"]
+    tokenized = {}
 
-    # tokenize LIMA dataset
+    # tokenize all datasets
     tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-7b", use_auth_token=hf_hub_token, trust_remote_code=True)
-    tokenized = dataset.map(
-        partial(tokenize_function, tokenizer=tokenizer),
-        batched=True,
-        batch_size=1000,
-        remove_columns=dataset.column_names,
-    )
+    
+    for key, dataset in datasets.items():
+        print(f"Tokenizing {key}...")
+        tokenized[key] = dataset.map(
+            partial(tokenize_function, tokenizer=tokenizer),
+            batched=True,
+            batch_size=1000,
+            remove_columns=dataset.column_names,
+        )
 
-    print(tokenized[0]['input_ids'], tokenized[0]['attention_mask'])
-
+    # summarize results
+    for key, dataset in tokenized.items():
+        print(f"Dataset {key} has {len(dataset)} examples.")
 
 
 if __name__ == '__main__':
