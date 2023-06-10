@@ -90,6 +90,51 @@ def train(
             "datasets": datasets
         }
     )
+    criterion = torch.nn.CrossEntropyLoss()
+
+    # train
+    model.train()
+    if accelerator.is_main_process:
+        print("Beginning training...")
+    running_losses = []
+    for epoch in range(num_epochs):
+        for batch in train_dataloader:
+            total_tokens += batch["input_ids"].numel() * accelerator.num_processes
+            logits = model(**batch).logits
+            loss = criterion(logits.view(-1, logits.shape[-1]), batch["targets"].view(-1))
+            if accelerator.is_main_process:
+                running_losses.append(loss.item())
+            accelerator.backward(loss)
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
+            if accelerator.is_main_process:
+                # reporting this running loss should average over the same # of batches
+                # as the actual loss used to compute gradient, even if not the same
+                # specific batches, since this is all just on one process.
+                if len(running_losses) >= effective_batch_size // microbatch_size:
+                    wandb.log({
+                        "epoch": epoch,
+                        "microbatch_loss": loss.item(),
+                        "running_loss": sum(running_losses) / len(running_losses),
+                        "lr": scheduler.get_last_lr()[0],
+                        "total_tokens": total_tokens,
+                    })
+                    running_losses = []
+                else:
+                    wandb.log({
+                        "epoch": epoch,
+                        "microbatch_loss": loss.item(),
+                        "lr": scheduler.get_last_lr()[0],
+                        "total_tokens": total_tokens,
+                    })
+        if accelerator.is_main_process:
+            print(f"Finished epoch {epoch}. Saving checkpoint...")
+            unwrapped_model = accelerator.unwrap_model(model)
+            torch.save(unwrapped_model.state_dict(), os.path.join(save_dir, f"model_{epoch}.pt"))
+            print("Model saved!")
+
+
 
     # accelerate training loop
 
