@@ -1,3 +1,4 @@
+import re
 import fire
 from datasets import load_dataset
 from transformers import AutoTokenizer
@@ -12,13 +13,27 @@ def process_lima(example):
         "messages": example['conversations']
     }
 
+def process_oasst_guanaco(example):
+    text = example['text']
+    messages = re.split(r'### Human:|### Assistant:', text)
+    messages = [m.strip() for m in messages if m.strip() != '']
+    return {
+        "messages": messages
+    }
+
 TRAIN_REGISTRY = {
     "lima": {
         "hub_url": "GAIR/lima",
         "split": "train",
         "filter_fn": None,
         "processing_fn": process_lima,
-    }
+    },
+    "oasst_guanaco": {
+        "hub_url": "timdettmers/openassistant-guanaco",
+        "split": "train",
+        "filter_fn": None,
+        "processing_fn": process_oasst_guanaco,
+    },
 }
 
 def tokenize_function(
