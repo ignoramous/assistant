@@ -65,6 +65,7 @@ def tokenize_function(
             attention_mask = attention_mask[:seq_len]
         
         # add to list of all input ids/attention masks
+        print(len(input_ids), len(attention_mask))
         all_input_ids.append(input_ids)
         all_attention_masks.append(attention_mask)
 
