@@ -176,11 +176,10 @@ def prepare_data(
 ):  
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-        
+
      # get LIMA dataset
     datasets = get_train_datasets(
-        datasets=datasets,
-        train=True
+        datasets=datasets
     )
 
     tokenized = {}
