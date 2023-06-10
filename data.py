@@ -200,8 +200,8 @@ def prepare_data(
         remove_columns=dataset.column_names,
     )
 
-    print(tokenized[0].shape)
-    
+    print(tokenized[0]['input_ids'].shape, tokenized[0]['attention_mask'].shape)
+
 
 
 if __name__ == '__main__':
