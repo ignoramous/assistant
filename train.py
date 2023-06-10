@@ -1,17 +1,28 @@
 import os
 import fire
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import wandb
+from transformers import AutoTokenizer, AutoModelForCausalLM# , BitsAndBytesConfig
 from datasets import load_dataset
 
 def train(
+    model_name="tiiuae/falcon-7b",
     hf_hub_token: str = None,
     wandb_project_name: str = 'assistant',
     data_dir: str = 'data',
 ):
+    # no 4bit bs for now
+    # # set up 4 bit config
+    # bnb_config = BitsAndBytesConfig(
+    #     load_in_4bit=True,
+    #     bnb_4bit_use_double_quant=True,
+    #     bnb_4bit_quant_type="nf4",
+    #     bnb_4bit_compute_dtype=torch.bfloat16
+    # )
+
     # get model
-    tokenizer = AutoTokenizer.from_pretrained("bigcode/starcoderplus", use_auth_token=hf_hub_token)
-    model = AutoModelForCausalLM.from_pretrained("bigcode/starcoderplus", use_auth_token=hf_hub_token)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=hf_hub_token, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=hf_hub_token, trust_remote_code=True)
 
     # get train dataloader
     if os.path.exists(os.path.join(data_dir, "train_dataloader.pt")):
