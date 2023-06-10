@@ -205,7 +205,7 @@ def prepare_data(
         remove_columns=dataset.column_names,
     )
 
-    print(len(tokenized[0]['input_ids']), len(tokenized[0]['attention_mask']))
+    print(tokenized[0]['input_ids'], tokenized[0]['attention_mask'])
 
 
 
