@@ -2,6 +2,7 @@ fire
 numpy
 wandb
 einops
+deepspeed
 torch ~= 2.0.1
 accelerate~=0.20.0
 transformers~=4.30.1
