@@ -3,7 +3,7 @@ import fire
 import torch
 import wandb
 from accelerate import Accelerator
-from transformers import AutoConfig, AutoModelForCausalLM# , BitsAndBytesConfig
+from transformers import AutoConfig, AutoModelForCausalLM # , BitsAndBytesConfig
 
 def train(
     model_name="tiiuae/falcon-7b",

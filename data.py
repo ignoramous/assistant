@@ -44,15 +44,15 @@ def tokenize_function(
     filter_max_prompt_length: int = 768, 
     seq_len: int = 1024,
     human_tokens: list[int] = [6], # falcon >>QUESTION<< token
-    assistant_tokens: list[int] = [5] # falcon >>ANSWER<< token
+    assistant_tokens: list[int] = [5], # falcon >>ANSWER<< token
 ):
     all_input_ids = []
     all_targets = []
     all_attention_masks = []
     
     for conversation in examples["messages"]:
-        if len(conversation) % 2 != 0:
-            conversation = conversation[:-1]
+        # if len(conversation) % 2 != 0:
+        #     conversation = conversation[:-1]
         
         # if the initial prompt is too long, skip it
         if len(tokenizer(conversation[0]).input_ids) > filter_max_prompt_length:
