@@ -81,7 +81,7 @@ def train(
         train_dataloader, model, optimizer, scheduler
     )
 
-    set up wandb (main process only, grouped makes wandb crazy slow ime)
+    # set up wandb (main process only, grouped makes wandb crazy slow ime)
     wandb.init(
         project=wandb_project_name,
         config = {
