@@ -227,7 +227,7 @@ def prepare_data(
         interleaved,
         batch_size=microbatch_size,
         shuffle=True,
-        pin_memory=True,
+        pin_memory=False,
         collate_fn=DefaultDataCollator(),
         num_workers=0,
     )
