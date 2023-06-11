@@ -22,7 +22,7 @@ def infer(
     
     model.eval()
     model.cuda()
-    while True:
+    for i in range(100):
         # decode next token
         input_tensor = torch.tensor(input_ids).view(1, -1).cuda()
         logits = model(input_tensor).logits
