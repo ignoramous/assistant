@@ -7,7 +7,7 @@ from accelerate import Accelerator
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 from data import tokenize_function
     
-
+@torch.no_grad()
 def infer(
     conversation: list[str],
     model: Any,
@@ -23,10 +23,14 @@ def infer(
     print(input_ids)
     print(tokenizer.decode(input_ids[0]))
     
+    model.eval()
     while True:
         # decode next token
-        logits = model(input_ids).logits
+        input_tensor = torch.tensor(input_ids).cuda()
+        logits = model(input_tensor).logits
         next_token_logits = logits[:, -1, :]
+        break
+    print(next_token_logits.shape)
 
 def chat():
     message = "Hello, world!"
