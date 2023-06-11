@@ -24,6 +24,7 @@ def infer(
     print(tokenizer.decode(input_ids[0]))
     
     model.eval()
+    model.cuda()
     while True:
         # decode next token
         input_tensor = torch.tensor(input_ids).cuda()
