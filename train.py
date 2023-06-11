@@ -100,7 +100,7 @@ def train(
     for epoch in range(num_epochs):
         for batch in train_dataloader:
             total_tokens += batch["input_ids"].numel() * accelerator.num_processes
-            logits = model(**batch).logits
+            logits = model(input_ids=batch['input_ids']).logits
             loss = criterion(logits.view(-1, logits.shape[-1]), batch["targets"].view(-1))
             if accelerator.is_main_process:
                 running_losses.append(loss.item())
