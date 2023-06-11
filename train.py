@@ -51,6 +51,8 @@ def train(
         config = AutoConfig.from_pretrained(model_name, use_auth_token=hf_hub_token, trust_remote_code=True)
         config.hidden_dropout = hidden_dropout_prob
         config.attention_dropout = attn_dropout_prob
+        # otherwise you get a really annoying warning on every training step
+        config.use_cache=False
         model = AutoModelForCausalLM.from_pretrained(
             model_name, 
             config=config,
