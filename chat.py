@@ -18,20 +18,23 @@ def infer(
 ):
     tokenize_fn_input = {"messages": [conversation]}
     tokenized = tokenize_function(tokenize_fn_input, tokenizer, seq_len=seq_len, human_tokens=human_tokens, assistant_tokens=assistant_tokens)
-    input_ids = [tokenized["input_ids"][0][:7]]
-
-    print(input_ids)
-    print(tokenizer.decode(input_ids[0]))
+    input_ids = tokenized["input_ids"][0][:7]
     
     model.eval()
     model.cuda()
     while True:
         # decode next token
-        input_tensor = torch.tensor(input_ids).cuda()
+        input_tensor = torch.tensor(input_ids).view(1, -1).cuda()
         logits = model(input_tensor).logits
         next_token_logits = logits[:, -1, :]
-        break
-    print(next_token_logits.shape)
+        next_token = torch.argmax(next_token_logits, dim=-1).item()
+        input_ids.append(next_token)
+        if next_token in human_tokens:
+            break
+
+    # decode response
+    response = tokenizer.decode(input_ids[7:])
+    print(response)
 
 def chat():
     message = "Hello, world!"
