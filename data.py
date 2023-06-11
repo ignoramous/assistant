@@ -229,7 +229,7 @@ def prepare_data(
         shuffle=True,
         pin_memory=True,
         collate_fn=DefaultDataCollator(),
-        num_workers=1,
+        num_workers=0,
     )
     torch.save({"datasets": datasets, "dataloader": dataloader}, os.path.join(data_dir, "train_dataloader.pt"))
 
