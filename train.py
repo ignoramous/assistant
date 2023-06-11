@@ -81,16 +81,16 @@ def train(
         train_dataloader, model, optimizer, scheduler
     )
 
-    # set up wandb (main process only, grouped makes wandb crazy slow ime)
-    # wandb.init(
-    #     project=wandb_project_name,
-    #     config = {
-    #         "model_name": model_name,
-    #         "model_config": config.__dict__,
-    #         "scheduler": scheduler_kwargs,
-    #         "datasets": datasets
-    #     }
-    # )
+    set up wandb (main process only, grouped makes wandb crazy slow ime)
+    wandb.init(
+        project=wandb_project_name,
+        config = {
+            "model_name": model_name,
+            "model_config": config.__dict__,
+            "scheduler": scheduler_kwargs,
+            "datasets": datasets
+        }
+    )
     criterion = torch.nn.CrossEntropyLoss()
 
     # train
@@ -110,26 +110,26 @@ def train(
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
-            # if accelerator.is_main_process:
-            #     # reporting this running loss should average over the same # of batches
-            #     # as the actual loss used to compute gradient, even if not the same
-            #     # specific batches, since this is all just on one process.
-            #     if len(running_losses) >= effective_batch_size // microbatch_size:
-            #         wandb.log({
-            #             "epoch": epoch,
-            #             "microbatch_loss": loss.item(),
-            #             "running_loss": sum(running_losses) / len(running_losses),
-            #             "lr": scheduler.get_last_lr()[0],
-            #             "total_tokens": total_tokens,
-            #         })
-            #         running_losses = []
-            #     else:
-            #         wandb.log({
-            #             "epoch": epoch,
-            #             "microbatch_loss": loss.item(),
-            #             "lr": scheduler.get_last_lr()[0],
-            #             "total_tokens": total_tokens,
-            #         })
+            if accelerator.is_main_process:
+                # reporting this running loss should average over the same # of batches
+                # as the actual loss used to compute gradient, even if not the same
+                # specific batches, since this is all just on one process.
+                if len(running_losses) >= effective_batch_size // microbatch_size:
+                    wandb.log({
+                        "epoch": epoch,
+                        "microbatch_loss": loss.item(),
+                        "running_loss": sum(running_losses) / len(running_losses),
+                        "lr": scheduler.get_last_lr()[0],
+                        "total_tokens": total_tokens,
+                    })
+                    running_losses = []
+                else:
+                    wandb.log({
+                        "epoch": epoch,
+                        "microbatch_loss": loss.item(),
+                        "lr": scheduler.get_last_lr()[0],
+                        "total_tokens": total_tokens,
+                    })
         if accelerator.is_main_process:
             print(f"Finished epoch {epoch}. Saving checkpoint...")
             unwrapped_model = accelerator.unwrap_model(model)
