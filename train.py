@@ -82,15 +82,16 @@ def train(
     )
 
     # set up wandb (main process only, grouped makes wandb crazy slow ime)
-    wandb.init(
-        project=wandb_project_name,
-        config = {
-            "model_name": model_name,
-            "model_config": config.__dict__,
-            "scheduler": scheduler_kwargs,
-            "datasets": datasets
-        }
-    )
+    if accelerator.is_main_process:
+        wandb.init(
+            project=wandb_project_name,
+            config = {
+                "model_name": model_name,
+                "model_config": config.__dict__,
+                "scheduler": scheduler_kwargs,
+                "datasets": datasets
+            }
+        )
     criterion = torch.nn.CrossEntropyLoss()
 
     # train
@@ -133,6 +134,8 @@ def train(
         if accelerator.is_main_process:
             print(f"Finished epoch {epoch}. Saving checkpoint...")
             unwrapped_model = accelerator.unwrap_model(model)
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
             torch.save(unwrapped_model.state_dict(), os.path.join(save_dir, f"model_{epoch}.pt"))
             print("Model saved!")
 
