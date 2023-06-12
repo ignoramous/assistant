@@ -3,9 +3,25 @@ import fire
 import torch
 import wandb
 from accelerate import Accelerator
-from transformers import AutoConfig, AutoModelForCausalLM# , BitsAndBytesConfig
+from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
+from transformers import AutoConfig, AutoModelForCausalLM, BitsAndBytesConfig
 
-def train(
+def print_trainable_parameters(model):
+    """
+    Prints the number of trainable parameters in the model.
+    """
+    trainable_params = 0
+    all_param = 0
+    for _, param in model.named_parameters():
+        all_param += param.numel()
+        if param.requires_grad:
+            trainable_params += param.numel()
+    print(
+        f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
+    )
+
+
+def train_qlora(
     model_name="tiiuae/falcon-7b",
     hidden_dropout_prob: float = 0.1,
     attn_dropout_prob: float = 0.1,
@@ -22,14 +38,13 @@ def train(
     data_dir: str = 'data',
     save_dir: str = 'checkpoints',
 ):
-    # no 4bit bs for now
-    # # set up 4 bit config
-    # bnb_config = BitsAndBytesConfig(
-    #     load_in_4bit=True,
-    #     bnb_4bit_use_double_quant=True,
-    #     bnb_4bit_quant_type="nf4",
-    #     bnb_4bit_compute_dtype=torch.bfloat16
-    # )
+    # set up 4 bit config
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16
+    )
 
     # set up accelerator
     accelerator = Accelerator(
@@ -54,11 +69,25 @@ def train(
         model = AutoModelForCausalLM.from_pretrained(
             model_name, 
             config=config,
+            quantization_config=bnb_config,
             use_auth_token=hf_hub_token, 
+            device_map="auto",
             trust_remote_code=True
         )
         if gradient_checkpointing:
             model.gradient_checkpointing_enable()
+        model = prepare_model_for_kbit_training(model)
+        config = LoraConfig(
+            r=8, 
+            lora_alpha=32, 
+            target_modules=["query_key_value"], 
+            lora_dropout=0.05, 
+            bias="none", 
+            task_type="CAUSAL_LM",
+        )
+
+        model = get_peft_model(model, config)
+        print_trainable_parameters(model)
 
     # get optimizer
     optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr)
@@ -80,15 +109,16 @@ def train(
     )
 
     # set up wandb (main process only, grouped makes wandb crazy slow ime)
-    # wandb.init(
-    #     project=wandb_project_name,
-    #     config = {
-    #         "model_name": model_name,
-    #         "model_config": config.__dict__,
-    #         "scheduler": scheduler_kwargs,
-    #         "datasets": datasets
-    #     }
-    # )
+    if accelerator.is_main_process:
+        wandb.init(
+            project=wandb_project_name,
+            config = {
+                "model_name": model_name,
+                "model_config": config.__dict__,
+                "scheduler": scheduler_kwargs,
+                "datasets": datasets
+            }
+        )
     criterion = torch.nn.CrossEntropyLoss()
 
     # train
@@ -108,36 +138,32 @@ def train(
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
-            # if accelerator.is_main_process:
-            #     # reporting this running loss should average over the same # of batches
-            #     # as the actual loss used to compute gradient, even if not the same
-            #     # specific batches, since this is all just on one process.
-            #     if len(running_losses) >= effective_batch_size // microbatch_size:
-            #         wandb.log({
-            #             "epoch": epoch,
-            #             "microbatch_loss": loss.item(),
-            #             "running_loss": sum(running_losses) / len(running_losses),
-            #             "lr": scheduler.get_last_lr()[0],
-            #             "total_tokens": total_tokens,
-            #         })
-            #         running_losses = []
-            #     else:
-            #         wandb.log({
-            #             "epoch": epoch,
-            #             "microbatch_loss": loss.item(),
-            #             "lr": scheduler.get_last_lr()[0],
-            #             "total_tokens": total_tokens,
-            #         })
+            if accelerator.is_main_process:
+                # reporting this running loss should average over the same # of batches
+                # as the actual loss used to compute gradient, even if not the same
+                # specific batches, since this is all just on one process.
+                if len(running_losses) >= effective_batch_size // microbatch_size:
+                    wandb.log({
+                        "epoch": epoch,
+                        "microbatch_loss": loss.item(),
+                        "running_loss": sum(running_losses) / len(running_losses),
+                        "lr": scheduler.get_last_lr()[0],
+                        "total_tokens": total_tokens,
+                    })
+                    running_losses = []
+                else:
+                    wandb.log({
+                        "epoch": epoch,
+                        "microbatch_loss": loss.item(),
+                        "lr": scheduler.get_last_lr()[0],
+                        "total_tokens": total_tokens,
+                    })
         if accelerator.is_main_process:
             print(f"Finished epoch {epoch}. Saving checkpoint...")
             unwrapped_model = accelerator.unwrap_model(model)
             torch.save(unwrapped_model.state_dict(), os.path.join(save_dir, f"model_{epoch}.pt"))
             print("Model saved!")
 
-
-
-    # accelerate training loop
-
 # eventually, maybe just want to make like a SFTTrainer class where you just call trainer.fit()
 if __name__ == '__main__':
-    fire.Fire(train)
+    fire.Fire(train_qlora)

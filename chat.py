@@ -36,10 +36,14 @@ def infer(
     response = tokenizer.decode(input_ids[7:])
     print(response)
 
-def chat():
+def chat(
+    checkpoint_path: str = None
+):
     message = "Hello, world!"
     tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-7b")
     model = AutoModelForCausalLM.from_pretrained("tiiuae/falcon-7b", trust_remote_code=True)
+    if checkpoint_path is not None:
+        model.load_state_dict(torch.load(checkpoint_path))
     infer([message], model, tokenizer)
 
 if __name__ == "__main__":
