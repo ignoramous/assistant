@@ -193,7 +193,7 @@ def prepare_data(
         os.makedirs(data_dir)
 
      # get LIMA dataset
-    datasets = get_train_datasets(
+    train_datasets = get_train_datasets(
         datasets=datasets
     )
 
@@ -202,7 +202,7 @@ def prepare_data(
     # tokenize all datasets
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_auth_token=hf_hub_token, trust_remote_code=True)
     
-    for key, dataset in datasets.items():
+    for key, dataset in train_datasets.items():
         print(f"Tokenizing {key}...")
         tokenized[key] = dataset.map(
             partial(tokenize_function, tokenizer=tokenizer),

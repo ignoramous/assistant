@@ -81,7 +81,7 @@ def train_qlora(
         config = LoraConfig(
             r=8, 
             lora_alpha=32, 
-            target_modules=["query_key_value"], 
+            target_modules=["query_key_value", "dense_h_to_4h", "dense_4h_to_h"], 
             lora_dropout=0.05, 
             bias="none", 
             task_type="CAUSAL_LM",
@@ -160,8 +160,17 @@ def train_qlora(
                         "total_tokens": total_tokens,
                     })
         if accelerator.is_main_process:
+
+            #     When you are ready to save the model for inference, just do the following.
+
+            # model.save_pretrained("output_dir") 
+            # # model.push_to_hub("my_awesome_peft_model") also works
+
+
             print(f"Finished epoch {epoch}. Saving checkpoint...")
             unwrapped_model = accelerator.unwrap_model(model)
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
             torch.save(unwrapped_model.state_dict(), os.path.join(save_dir, f"model_{epoch}.pt"))
             print("Model saved!")
 
