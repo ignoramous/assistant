@@ -16,12 +16,12 @@ def evaluate(accelerator, model, eval_dataloaders):
         loader = eval_dataloaders[key]
         losses = []
         for batch in tqdm.tqdm(loader):
-            logits = model(input_ids=batch['input_ids']).logits.float()
-            batch_losses = torch.nn.functional.cross_entropy(
-                logits.view(-1, logits.shape[-1]), batch["targets"].view(-1), reduction="none"
-            )
+            logits = model(input_ids=batch['input_ids']).logits.float() # shape: (batch_size, seq_len, vocab_size)
+            batch_losses = torch.stack([torch.nn.functional.cross_entropy(
+                logits[i, :, :], batch["targets"][i, :]
+            ) for i in range(logits.shape[0])])
             losses.extend(accelerator.gather(batch_losses).view(-1).cpu().numpy())
-        print("losses before clipping them:", len(losses))
+        print("losses before clipping them:", len(losses)) 
         losses = losses[:len(loader.dataset)]
         print(f"Avg loss on {key} over {len(losses)} examples: {np.mean(losses)}")
         metrics[f"{key}_loss"] = np.mean(losses)
