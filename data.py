@@ -142,6 +142,8 @@ def get_datasets(
     if datasets == "all":
         datasets = list(registry.keys())
 
+    print(f"Getting datasets: {datasets}")
+
     result = {}
     
     # process all datasets to have the same 2 columns: prompt, response
