@@ -7,6 +7,8 @@ from accelerate import Accelerator
 from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
 from transformers import AutoConfig, AutoModelForCausalLM, BitsAndBytesConfig
 
+from eval import evaluate
+
 
 def print_trainable_parameters(model):
     """
@@ -64,6 +66,7 @@ def train(
 
     # create save dir
     if not os.path.exists(save_dir):
+        print(f"Creating save directory at {save_dir}")
         os.makedirs(save_dir)
 
     # set up accelerator
@@ -209,6 +212,9 @@ def train(
                         "lr": scheduler.get_last_lr()[0],
                         "total_tokens": total_tokens,
                     })
+        # At end of epoch, evaluate and save model. :)
+        
+
         if accelerator.is_main_process:
             print(f"Finished epoch {epoch}. Saving checkpoint...")
             if not lora:
