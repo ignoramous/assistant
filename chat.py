@@ -4,7 +4,8 @@ import torch
 import wandb
 from typing import Any
 from accelerate import Accelerator
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from data import tokenize_function
     
 @torch.no_grad()
@@ -37,13 +38,58 @@ def infer(
     print(response)
 
 def chat(
-    checkpoint_path: str = None
+    model_name: str,
+    checkpoint_path: str,
+    lora: bool = False,
+    quantize: str = None,
 ):
-    message = "Hello, world!"
-    tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-7b")
-    model = AutoModelForCausalLM.from_pretrained("tiiuae/falcon-7b", trust_remote_code=True)
-    if checkpoint_path is not None:
+    # validate args
+    if quantize not in [None, "4bit", "8bit"]:
+        raise ValueError("quantize must be one of [None, '4bit', '8bit']")
+    
+    if not lora and quantize:
+        raise ValueError("Full model checkpoints aren't quantized so quantizing is not supported right now.")
+
+    # set up 4/8 bit config
+    if quantize == "8bit":
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=False,
+            load_in_8bit=True
+        )
+    elif quantize == "4bit":
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16
+        )
+    else:
+        bnb_config = None
+    
+    # load model
+    model_config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+    model_config.use_cache = False
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name, 
+        config=model_config,
+        quantization_config=bnb_config,
+        device_map="auto",
+        trust_remote_code=True
+    )
+
+    # load checkpoint
+    if lora:
+        model = PeftModel.from_pretrained(
+            model,
+            checkpoint_path,
+        )
+    else:
         model.load_state_dict(torch.load(checkpoint_path))
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+
+    
+    message = "Hello, world!"
     infer([message], model, tokenizer)
 
 if __name__ == "__main__":
