@@ -29,7 +29,7 @@ def infer(
         if token in assistant_tokens:
             idx = i
             break
-    input_ids = tokenized["input_ids"][0][:idx+1]
+    input_ids = tokenized["input_ids"][:idx+1]
     # preview the inputs
     print(f"Generating completion for input: {tokenizer.decode(input_ids)}")
     
