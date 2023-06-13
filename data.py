@@ -138,9 +138,6 @@ def get_datasets(
     train=True
 ):  
     registry = TRAIN_REGISTRY if train else EVAL_REGISTRY
-    print(registry)
-
-    print(f"Getting datasets: {datasets}")
     
     if datasets == "all":
         datasets = list(registry.keys())
