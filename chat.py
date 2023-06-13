@@ -17,7 +17,7 @@ def infer(
     human_tokens: list[int] = [6], # falcon >>QUESTION<< token
     assistant_tokens: list[int] = [5] # falcon >>ANSWER<< token
 ):
-    tokenized = tokenize_conversation(
+    input_ids, _, _ = tokenize_conversation(
         conversation, 
         tokenizer, 
         human_tokens=human_tokens, 
@@ -25,11 +25,11 @@ def infer(
     )
     # find the first assistant token
     idx = 0
-    for i, token in enumerate(tokenized["input_ids"]):
+    for i, token in enumerate(input_ids):
         if token in assistant_tokens:
             idx = i
             break
-    input_ids = tokenized["input_ids"][:idx+1]
+    input_ids = input_ids[:idx+1]
     # preview the inputs
     print(f"Generating completion for input: {tokenizer.decode(input_ids)}")
     
