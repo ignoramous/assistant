@@ -22,7 +22,6 @@ def infer(
     input_ids = tokenized["input_ids"][0][:7]
     
     model.eval()
-    model.cuda()
     for i in range(100):
         # decode next token
         input_tensor = torch.tensor(input_ids).view(1, -1).cuda()
