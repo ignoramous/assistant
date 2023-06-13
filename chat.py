@@ -11,7 +11,7 @@ from data import tokenize_function
 @torch.no_grad()
 def infer(
     conversation: list[str],
-    accelerator: Accelerator,
+    # accelerator: Accelerator,
     model: Any,
     tokenizer: Any,
     seq_len: int = 1024,
