@@ -11,6 +11,7 @@ from data import tokenize_function
 @torch.no_grad()
 def infer(
     conversation: list[str],
+    accelerator: Accelerator,
     model: Any,
     tokenizer: Any,
     seq_len: int = 1024,
@@ -19,7 +20,13 @@ def infer(
 ):
     tokenize_fn_input = {"messages": [conversation]}
     tokenized = tokenize_function(tokenize_fn_input, tokenizer, seq_len=seq_len, human_tokens=human_tokens, assistant_tokens=assistant_tokens)
-    input_ids = tokenized["input_ids"][0][:7]
+    # find the first assistant token
+    idx = 0
+    for i, token in enumerate(tokenized["input_ids"][0]):
+        if token in assistant_tokens:
+            idx = i
+            break
+    input_ids = tokenized["input_ids"][0][:idx+1]
     
     model.eval()
     for i in range(100):
@@ -88,7 +95,7 @@ def chat(
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 
     
-    message = "Hello, world!"
+    message = "What is the capital of France?"
     infer([message], model, tokenizer)
 
 if __name__ == "__main__":
