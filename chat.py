@@ -25,7 +25,7 @@ def infer(
     )
     # find the first assistant token
     idx = 0
-    for i, token in enumerate(tokenized["input_ids"][0]):
+    for i, token in enumerate(tokenized["input_ids"]):
         if token in assistant_tokens:
             idx = i
             break
