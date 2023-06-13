@@ -23,6 +23,11 @@ def process_oasst_guanaco(example):
         "messages": messages
     }
 
+def process_dolly(example):
+    return {
+        "messages": [example['instruction'], example['response']]
+    }
+
 TRAIN_REGISTRY = {
     "lima": {
         "hub_url": "GAIR/lima",
@@ -33,6 +38,21 @@ TRAIN_REGISTRY = {
     "oasst_guanaco": {
         "hub_url": "timdettmers/openassistant-guanaco",
         "split": "train",
+        "filter_fn": None,
+        "processing_fn": process_oasst_guanaco,
+    },
+}
+
+EVAL_REGISTRY = {
+    "dolly": {
+        "hub_url": "databricks/databricks-dolly-15k",
+        "split": "train",
+        "filter_fn": lambda example: example['context'] == "",
+        "processing_fn": process_dolly,
+    },
+    "oasst_guanaco": {
+        "hub_url": "timdettmers/openassistant-guanaco",
+        "split": "test",
         "filter_fn": None,
         "processing_fn": process_oasst_guanaco,
     },
@@ -113,8 +133,11 @@ def tokenize_function(
     }
 
 
-def get_train_datasets(datasets=["lima"]):  
-    registry = TRAIN_REGISTRY
+def get_datasets(
+    datasets="all",
+    train=True
+):  
+    registry = TRAIN_REGISTRY if train else EVAL_REGISTRY
     
     if datasets == "all":
         datasets = list(registry.keys())
@@ -133,78 +156,54 @@ def get_train_datasets(datasets=["lima"]):
         if registry[ds_name]["processing_fn"] is not None:
             print(loaded[0].keys())
             loaded = loaded.map(registry[ds_name]["processing_fn"], remove_columns=loaded.column_names)
+        
+        # keep eval datasets small
+        if not train and len(loaded) > 1000:
+            loaded = loaded.shuffle(seed=42).flatten_indices().select(range(1000))
         result[ds_name] = loaded
     
     for key, dataset in result.items():
         print(f"Dataset {key} has {len(dataset)} examples.")
     return result
 
-# def get_train_dataloader(
-#         datasets,
-#         add_human_assistant_labels,
-#         batch_size, 
-#         tokenizer,
-#         filter_min_length_in_tokens=None,
-#         filter_max_length_in_tokens=None,
-#         seq_len=1024,
-# ):
-#     if tokenizer is None:
-#         raise ValueError("Must specify tokenizer.")
+def to_dataloader(dataset, microbatch_size, shuffle=False):
+    return torch.utils.data.DataLoader(
+        dataset,
+        batch_size=microbatch_size,
+        shuffle=shuffle,
+        pin_memory=False,
+        collate_fn=DefaultDataCollator(),
+        num_workers=0,
+    )
 
-#     datasets = get_datasets(
-#         datasets,
-#         add_human_assistant_labels,
-#         min_length_in_tokens=filter_min_length_in_tokens, 
-#         max_length_in_tokens=filter_max_length_in_tokens, 
-#         tokenizer=tokenizer,
-#         train=True
-#     )
-    
-#     if len(datasets) > 1:
-#         print("Interleaving datasets (this may take a while)...")
-#         lengths = [len(dataset) for dataset in datasets.values()]
-#         probabilities = [length / sum(lengths) for length in lengths]
-#         print([f"{n}: {l}" for n, l in zip(datasets.keys(),lengths)])
-#         interleaved =  interleave_datasets([d for _, d in datasets.items()], probabilities=probabilities, seed=42)
-#     else:
-#         interleaved = datasets[list(datasets.keys())[0]]
-    
-
-
-#     dataloader = torch.utils.data.DataLoader(
-#         tokenized,
-#         batch_size=batch_size,
-#         shuffle=True,
-#         pin_memory=True,
-#         collate_fn=DefaultDataCollator(),
-#         num_workers=4,
-#     )
-    
-#     return dataloader
 
 def prepare_data(
-    datasets=["lima"],
+    train_datasets="all",
+    eval_datasets="all",
     tokenizer_name="tiiuae/falcon-7b",
-    microbatch_size: int = 4,
+    train_microbatch_size: int = 4,
+    eval_microbatch_size: int = 16,
     hf_hub_token: str = None,
     data_dir: str = 'data',
 ):  
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-     # get LIMA dataset
-    train_datasets = get_train_datasets(
-        datasets=datasets
+     # get train datasets
+    print("=== BUILDING TRAIN DATALOADERS ===")
+    train_datasets_dict = get_datasets(
+        datasets=train_datasets,
+        train=True
     )
 
-    tokenized = {}
+    train_tokenized = {}
 
     # tokenize all datasets
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_auth_token=hf_hub_token, trust_remote_code=True)
     
-    for key, dataset in train_datasets.items():
+    for key, dataset in train_datasets_dict.items():
         print(f"Tokenizing {key}...")
-        tokenized[key] = dataset.map(
+        train_tokenized[key] = dataset.map(
             partial(tokenize_function, tokenizer=tokenizer),
             batched=True,
             batch_size=1000,
@@ -212,29 +211,50 @@ def prepare_data(
         )
 
     # interleave datasets
-    print("Interleaving datasets (this may take a while)...")
-    lengths = [len(dataset) for dataset in tokenized.values()]
-    probabilities = [length / sum(lengths) for length in lengths]
-    print([f"{n}: {l}" for n, l in zip(tokenized.keys(),lengths)])
-    if len(tokenized) > 1:
+    if len(train_tokenized) > 1:
+        print("Interleaving datasets (this may take a while)...")
+        lengths = [len(dataset) for dataset in train_tokenized.values()]
+        probabilities = [length / sum(lengths) for length in lengths]
+        print([f"{n}: {l}" for n, l in zip(train_tokenized.keys(),lengths)])
         interleaved =  interleave_datasets([d for _, d in tokenized.items()], probabilities=probabilities, seed=42)
     else:
-        interleaved = tokenized[list(tokenized.keys())[0]]
+        interleaved = train_tokenized[list(train_tokenized.keys())[0]]
 
     # save train dataloader
     print("Saving train dataloader...")
     dataloader = torch.utils.data.DataLoader(
         interleaved,
-        batch_size=microbatch_size,
+        batch_size=train_microbatch_size,
         shuffle=True,
         pin_memory=False,
         collate_fn=DefaultDataCollator(),
         num_workers=0,
     )
-    torch.save({"datasets": datasets, "dataloader": dataloader}, os.path.join(data_dir, "train_dataloader.pt"))
+    torch.save({"datasets": train_datasets, "dataloader": dataloader}, os.path.join(data_dir, "train_dataloader.pt"))
 
+    # get eval datasets
+    print("=== BUILDING EVAL DATALOADERS ===")
+    eval_datasets_dict = get_datasets(
+        datasets=eval_datasets,
+        train=False
+    )
 
-
+    # tokenize all datasets
+    eval_tokenized = {}
+    for key, dataset in eval_datasets_dict.items():
+        print(f"Tokenizing {key}...")
+        eval_tokenized[key] = dataset.map(
+            partial(tokenize_function, tokenizer=tokenizer),
+            batched=True,
+            batch_size=1000,
+            remove_columns=dataset.column_names,
+        )
+    
+    # save eval dataloaders
+    print("Saving eval dataloaders...")
+    torch.save({
+        k: to_dataloader(v, eval_microbatch_size, shuffle=False) for k, v in eval_tokenized.items()
+    }, os.path.join(data_dir, "eval_dataloaders.pt"))
 
 if __name__ == '__main__':
     fire.Fire(prepare_data)

@@ -3,8 +3,9 @@ numpy
 wandb
 einops
 deepspeed
-peft
+# peft -- don't install this one, need to do the special github one for now
 bitsandbytes
+scipy
 torch ~= 2.0.1
 accelerate~=0.20.0
 transformers~=4.30.1
