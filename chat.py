@@ -41,7 +41,7 @@ def infer(
 
     generated_tokens = []
     model.eval()
-    for i in range(100):
+    for i in range(750):
         # decode next token
         print("|", end="", flush=True)
         input_tensor = torch.tensor(input_ids).view(1, -1).cuda()
@@ -55,7 +55,7 @@ def infer(
         next_token = next_token_index.item()
         input_ids.append(next_token)
         generated_tokens.append(next_token)
-        if generated_tokens[-len(human_tokens) :] == human_tokens:
+        if generated_tokens[-len(human_tokens) :] == human_tokens or generated_tokens[-1] == tokenizer.eos_token_id:
             break
 
     # decode response
