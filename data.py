@@ -28,6 +28,11 @@ def process_dolly(example):
         "messages": [example['instruction'], example['response']]
     }
 
+def process_alpaca(example):
+    return {
+        "messages": [example['instruction'], example['output']]
+    }
+
 TRAIN_REGISTRY = {
     "lima": {
         "hub_url": "GAIR/lima",
@@ -56,6 +61,12 @@ EVAL_REGISTRY = {
         "filter_fn": None,
         "processing_fn": process_oasst_guanaco,
     },
+    "alpaca": {
+        "hub_url": "yahma/alpaca-cleaned",
+        "split": "train",
+        "filter_fn": lambda example: example['input'] == "",
+        "processing_fn": process_alpaca,
+    }
 }
 
 # this tokenizes a single conversation, with no padding or truncation.
