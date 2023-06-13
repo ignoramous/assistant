@@ -58,6 +58,33 @@ EVAL_REGISTRY = {
     },
 }
 
+# this tokenizes a single conversation, with no padding or truncation.
+# also useful for inference/chat.
+def tokenize_conversation(
+    conversation: list[str],
+    tokenizer: Any,
+    human_tokens: list[int] = [6], # falcon >>QUESTION<< token
+    assistant_tokens: list[int] = [5], # falcon >>ANSWER<< token
+):
+    input_ids = [tokenizer.eos_token_id, *human_tokens]
+    targets = [-100] * len(input_ids) # we will roll targets over by 1 later
+    attention_mask = [1] * len(input_ids)
+    for idx, message in enumerate(conversation):
+        tokenized = tokenizer(message, add_special_tokens=False, padding=False, truncation=False)
+        if idx % 2 == 0:
+            # user message ends by prompt for assistant reply. don't calculate loss on user messages.
+            input_ids.extend([*tokenized.input_ids, *assistant_tokens])
+            targets.extend([-100] * (len(tokenized.input_ids) + len(assistant_tokens)))
+            attention_mask.extend([1] * (len(tokenized.input_ids) + len(assistant_tokens)))
+        else:
+            # assistant message ends by prompt for user reply. calculate loss on assistant messages,
+            # including the 'human tokens', since this is how we know the assistant is finished.
+            input_ids.extend([*tokenized.input_ids, *human_tokens])
+            targets.extend([*tokenized.input_ids, *human_tokens])
+            attention_mask.extend([1] * (len(tokenized.input_ids) + len(human_tokens)))
+
+    return input_ids, targets, attention_mask
+
 def tokenize_function(
     examples: dict, 
     tokenizer: Any, 
@@ -78,29 +105,20 @@ def tokenize_function(
         if len(tokenizer(conversation[0]).input_ids) > filter_max_prompt_length:
             continue
 
-        # otherwise, tokenize each message in the conversation.
-        # loss shouldn't be calculated on user messages, this is reflected in the targets.
-        input_ids = [tokenizer.eos_token_id, *human_tokens]
-        targets = [-100] * len(input_ids) # we will roll targets over by 1 later
-        attention_mask = [1] * len(input_ids)
-        for idx, message in enumerate(conversation):
-            tokenized = tokenizer(message, add_special_tokens=False, padding=False, truncation=False)
-            if idx % 2 == 0:
-                # user message ends by prompt for assistant reply. don't calculate loss on user messages.
-                input_ids.extend([*tokenized.input_ids, *assistant_tokens])
-                targets.extend([-100] * (len(tokenized.input_ids) + len(assistant_tokens)))
-                attention_mask.extend([1] * (len(tokenized.input_ids) + len(assistant_tokens)))
-            else:
-                # assistant message ends by prompt for user reply. calculate loss on assistant messages,
-                # including the 'human tokens', since this is how we know the assistant is finished.
-                input_ids.extend([*tokenized.input_ids, *human_tokens])
-                targets.extend([*tokenized.input_ids, *human_tokens])
-                attention_mask.extend([1] * (len(tokenized.input_ids) + len(human_tokens)))
+        else:
+            input_ids, targets, attention_mask = tokenize_conversation(
+                conversation,
+                tokenizer,
+                human_tokens=human_tokens,
+                assistant_tokens=assistant_tokens,
+            )
 
         # assert shapes match
         assert len(input_ids) == len(attention_mask), "you done fucked up, cowboy"
         assert len(input_ids) == len(targets), "you done fucked up, cowboy 2"
 
+        # make sure that the input_ids end with the human token or assistant token
+        assert input_ids[-1] == human_tokens[-1] or input_ids[-1] == assistant_tokens[-1]
 
         # handle padding, and truncation
         pad_token = tokenizer.pad_token_id

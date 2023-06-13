@@ -6,7 +6,7 @@ from typing import Any
 from accelerate import Accelerator
 from peft import PeftModel
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-from data import tokenize_function
+from data import tokenize_conversation
     
 @torch.no_grad()
 def infer(
@@ -14,12 +14,15 @@ def infer(
     # accelerator: Accelerator,
     model: Any,
     tokenizer: Any,
-    seq_len: int = 1024,
     human_tokens: list[int] = [6], # falcon >>QUESTION<< token
     assistant_tokens: list[int] = [5] # falcon >>ANSWER<< token
 ):
-    tokenize_fn_input = {"messages": [conversation]}
-    tokenized = tokenize_function(tokenize_fn_input, tokenizer, seq_len=seq_len, human_tokens=human_tokens, assistant_tokens=assistant_tokens)
+    tokenized = tokenize_conversation(
+        conversation, 
+        tokenizer, 
+        human_tokens=human_tokens, 
+        assistant_tokens=assistant_tokens
+    )
     # find the first assistant token
     idx = 0
     for i, token in enumerate(tokenized["input_ids"][0]):
@@ -30,6 +33,7 @@ def infer(
     # preview the inputs
     print(f"Generating completion for input: {tokenizer.decode(input_ids)}")
     
+    generated_tokens = []
     model.eval()
     for i in range(100):
         # decode next token
@@ -39,12 +43,13 @@ def infer(
         next_token_logits = logits[:, -1, :]
         next_token = torch.argmax(next_token_logits, dim=-1).item()
         input_ids.append(next_token)
-        if next_token in human_tokens:
-            print(f"\n Generated {i} new tokens.")
+        generated_tokens.append(next_token)
+        if generated_tokens[-len(human_tokens):] == human_tokens:
             break
     
     # decode response
-    response = tokenizer.decode(input_ids[7:])
+    print(f"Generated {len(generated_tokens)} tokens.")
+    response = tokenizer.decode(generated_tokens)
     print(response)
 
 def chat(
@@ -87,14 +92,14 @@ def chat(
         trust_remote_code=True
     )
 
-    # # load checkpoint
-    # if lora:
-    #     model = PeftModel.from_pretrained(
-    #         model,
-    #         checkpoint_path,
-    #     )
-    # else:
-    #     model.load_state_dict(torch.load(checkpoint_path))
+    # load checkpoint
+    if lora:
+        model = PeftModel.from_pretrained(
+            model,
+            checkpoint_path,
+        )
+    else:
+        model.load_state_dict(torch.load(checkpoint_path))
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 
