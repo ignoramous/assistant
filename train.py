@@ -75,7 +75,7 @@ def train(
         gradient_accumulation_steps=effective_batch_size // microbatch_size,
     )
 
-    # set up 4 bit config
+    # set up 4/8 bit config
     if quantize == "8bit":
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=False,
@@ -213,6 +213,7 @@ def train(
                         "total_tokens": total_tokens,
                     })
         # At end of epoch, evaluate and save model. :)
+        print("do evaluation here")
         
 
         if accelerator.is_main_process:
