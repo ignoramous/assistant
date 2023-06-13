@@ -31,6 +31,7 @@ def infer(
     model.eval()
     for i in range(100):
         # decode next token
+        print("|", end="")
         input_tensor = torch.tensor(input_ids).view(1, -1).cuda()
         logits = model(input_tensor).logits
         next_token_logits = logits[:, -1, :]
@@ -38,7 +39,7 @@ def infer(
         input_ids.append(next_token)
         if next_token in human_tokens:
             break
-
+    print()
     # decode response
     response = tokenizer.decode(input_ids[7:])
     print(response)
