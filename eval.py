@@ -21,6 +21,7 @@ def evaluate(accelerator, model, eval_dataloaders):
                 logits.view(-1, logits.shape[-1]), batch["targets"].view(-1), reduction="none"
             )
             losses.extend(accelerator.gather(batch_losses).view(-1).cpu().numpy())
+        print("losses before clipping them:", len(losses))
         losses = losses[:len(loader.dataset)]
         print(f"Avg loss on {key} over {len(losses)} examples: {np.mean(losses)}")
         metrics[f"{key}_loss"] = np.mean(losses)

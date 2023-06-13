@@ -235,7 +235,7 @@ def prepare_data(
         lengths = [len(dataset) for dataset in train_tokenized.values()]
         probabilities = [length / sum(lengths) for length in lengths]
         print([f"{n}: {l}" for n, l in zip(train_tokenized.keys(),lengths)])
-        interleaved =  interleave_datasets([d for _, d in tokenized.items()], probabilities=probabilities, seed=42)
+        interleaved =  interleave_datasets([d for _, d in train_tokenized.items()], probabilities=probabilities, seed=42)
     else:
         interleaved = train_tokenized[list(train_tokenized.keys())[0]]
 
