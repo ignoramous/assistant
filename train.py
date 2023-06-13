@@ -39,6 +39,7 @@ def train(
     lr_warmup_pct: float = 0.005,
     lr_warmup_factor: float = 25.0,
     lr_decay_factor: float = 10.0,
+    grad_clip: float = 1.0,
     num_epochs: int = 1,
     effective_batch_size: int = 32,
     microbatch_size: int = 4,
@@ -189,6 +190,8 @@ def train(
             if accelerator.is_main_process:
                 running_losses.append(loss.item())
             accelerator.backward(loss)
+            if grad_clip is not None:
+                accelerator.clip_grad_norm_(model.parameters(), grad_clip)
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad(set_to_none=True)
