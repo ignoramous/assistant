@@ -87,14 +87,14 @@ def chat(
         trust_remote_code=True
     )
 
-    # load checkpoint
-    if lora:
-        model = PeftModel.from_pretrained(
-            model,
-            checkpoint_path,
-        )
-    else:
-        model.load_state_dict(torch.load(checkpoint_path))
+    # # load checkpoint
+    # if lora:
+    #     model = PeftModel.from_pretrained(
+    #         model,
+    #         checkpoint_path,
+    #     )
+    # else:
+    #     model.load_state_dict(torch.load(checkpoint_path))
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 
