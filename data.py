@@ -138,6 +138,7 @@ def get_datasets(
     train=True
 ):  
     registry = TRAIN_REGISTRY if train else EVAL_REGISTRY
+    print(registry)
     
     if datasets == "all":
         datasets = list(registry.keys())
@@ -177,7 +178,6 @@ def to_dataloader(dataset, microbatch_size, shuffle=False):
         collate_fn=DefaultDataCollator(),
         num_workers=0,
     )
-
 
 def prepare_data(
     train_datasets="all",
