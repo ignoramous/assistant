@@ -37,7 +37,7 @@ def infer(
     model.eval()
     for i in range(100):
         # decode next token
-        print("|", end="")
+        print("|", end="", flush=True)
         input_tensor = torch.tensor(input_ids).view(1, -1).cuda()
         logits = model(input_tensor).logits
         next_token_logits = logits[:, -1, :]
@@ -48,7 +48,7 @@ def infer(
             break
     
     # decode response
-    print(f"Generated {len(generated_tokens)} tokens.")
+    print(f"\nGenerated {len(generated_tokens)} tokens.\n\n")
     response = tokenizer.decode(generated_tokens)
     print(response)
 
@@ -103,9 +103,9 @@ def chat(
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 
-    
-    message = input("Enter a message: ")
-    infer([message], model, tokenizer)
+    while True:
+        message = input("Enter a message: ")
+        infer([message], model, tokenizer)
 
 if __name__ == "__main__":
     fire.Fire(chat)
