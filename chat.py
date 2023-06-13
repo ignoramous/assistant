@@ -27,6 +27,8 @@ def infer(
             idx = i
             break
     input_ids = tokenized["input_ids"][0][:idx+1]
+    # preview the inputs
+    print(f"Generating completion for input: {tokenizer.decode(input_ids)}")
     
     model.eval()
     for i in range(100):
@@ -38,8 +40,9 @@ def infer(
         next_token = torch.argmax(next_token_logits, dim=-1).item()
         input_ids.append(next_token)
         if next_token in human_tokens:
+            print(f"\n Generated {i} new tokens.")
             break
-    print()
+    
     # decode response
     response = tokenizer.decode(input_ids[7:])
     print(response)
@@ -96,7 +99,7 @@ def chat(
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 
     
-    message = "What is the capital of France?"
+    message = input("Enter a message: ")
     infer([message], model, tokenizer)
 
 if __name__ == "__main__":
