@@ -181,9 +181,9 @@ def train(
     metrics = evaluate(accelerator, model, eval_dataloaders)
     if accelerator.is_main_process:
         wandb.log({"epoch": 0, **metrics })
+    model.train()
 
     # train
-    model.train()
     if accelerator.is_main_process:
         print("Beginning training...")
     total_tokens = 0
@@ -226,6 +226,7 @@ def train(
         metrics = evaluate(accelerator, model, eval_dataloaders)
         if accelerator.is_main_process:
             wandb.log({"epoch": epoch + 1, **metrics})
+        del metrics
         
 
         if accelerator.is_main_process:
@@ -236,6 +237,7 @@ def train(
             else:
                 model.save_pretrained(os.path.join(save_dir, f"model_{epoch}"))
             print("Model saved!")
+        model.train()
 
 # eventually, maybe just want to make like a SFTTrainer class where you just call trainer.fit()
 if __name__ == '__main__':
