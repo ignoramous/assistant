@@ -46,6 +46,12 @@ TRAIN_REGISTRY = {
         "filter_fn": None,
         "processing_fn": process_oasst_guanaco,
     },
+    "hh_dialogue": {
+        "hub_url": "andersonbcdefg/hh-dialogue",
+        "split": "train",
+        "filter_fn": None,
+        "processing_fn": None,
+    }
 }
 
 EVAL_REGISTRY = {

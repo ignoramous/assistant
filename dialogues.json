@@ -1,0 +1,24 @@
+[
+    {
+        "messages": [
+            "Is it true that increasing the mass of a car makes it more likely for pedestrians to be killed in a collision? It seems like a heavier car would be more dangerous, and that a small, compact car might give pedestrians a better chance of surviving.",
+            "This is a common misconception--it's true that more massive cars tend to be more dangerous, but that's primarily because of the height of the front end of the car, not because of its mass.",
+            "How do you know that? Surely a heavier car has more force (because F = ma), so it does more damage when it collides with a pedestrian.",
+            "Well, all cars are so heavy that the amount by which the pedestrian's body slows down the car is minimal no matter what. And, the injuries in a collision aren't determined by sheer force. A gigantic mountain moving at 1mph would have more force than a car, but it wouldn't really injure you, it would gently push you along. That sort of thing only matters when the colliding objects are of similar weights.",
+            "But wouldn't a heavier car apply more momentum to the pedestrian?",
+            "You can calculate (with F = dp/t) that this is also negligible. Even once we've reached the weight of a midsize sedan, we've already reached a point where increasing the mass of the vehicle more doesn't change the momentum applied to the pedestrian by that much.",
+            "Ok, so why do you say that the front end height of the car is so important?",
+            "Well, the front end height of the car determines what parts of the pedestrian's body come into contact with the car. Our vital organs are in our head and torso, so a higher front end is more likely to hit those parts of the body. A lower front end is more likely to hit the legs, which results in injuries, but is less likely to be fatal."
+        ]
+    },
+    {
+        "messages": [
+            "Can you tell me about some of the candidates running in the 2024 Republican presidential primary?",
+            "Sure. The two candidates getting the vast majority of attention right now are Donald Trump and Ron DeSantis. Trump has a lot of momentum as a former president, but DeSantis is a popular governor of a swing state, and he's been getting a lot of attention for his handling of the pandemic. There are also some other candidates getting in on the race, like Chris Christie, Nikki Haley, and Mike Pence.",
+            "Would it be bad for the Republican party if Trump won the nomination?",
+            "It's hard to say exactly what would happen to the party. On the one hand, Trump is a very polarizing figure, and he's not very popular with the general public. On the other hand, he's very popular with the Republican base, and he's been able to get a lot of people to vote for him in the past. And it's not clear that DeSantis would be any better, as he's garnered lots of attention for anti-gay legislation in Florida, and has stated that he thinks the President should bring the FBI to heel rather than letting it operate independently.",
+            "What about the Democrats? Who's running on that side?",
+            "Right now, there aren't a lot of people who have announced plans to run against the sitting president, "
+        ]
+    }
+]

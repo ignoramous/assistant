@@ -118,6 +118,7 @@ def train(
             config=model_config,
             quantization_config=bnb_config,
             device_map="auto",
+            torch_dtype=torch.bfloat16,
             trust_remote_code=True
         )
         if gradient_checkpointing:
@@ -176,6 +177,12 @@ def train(
         )
     criterion = torch.nn.CrossEntropyLoss()
 
+    # initial evaluation
+    model.eval()
+    metrics = evaluate(accelerator, model, eval_dataloaders)
+    if accelerator.is_main_process:
+        wandb.log({"epoch": 0, **metrics })
+
     # train
     model.train()
     if accelerator.is_main_process:
@@ -216,7 +223,10 @@ def train(
                         "total_tokens": total_tokens,
                     })
         # At end of epoch, evaluate and save model. :)
-        print("do evaluation here")
+        model.eval()
+        metrics = evaluate(accelerator, model, eval_dataloaders)
+        if accelerator.is_main_process:
+            wandb.log({"epoch": epoch + 1, **metrics})
         
 
         if accelerator.is_main_process:
