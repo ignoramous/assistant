@@ -118,7 +118,6 @@ def train(
             config=model_config,
             quantization_config=bnb_config,
             device_map="auto",
-            torch_dtype=torch.bfloat16,
             trust_remote_code=True
         )
         if gradient_checkpointing:
