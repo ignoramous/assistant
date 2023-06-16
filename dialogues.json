@@ -18,7 +18,57 @@
             "Would it be bad for the Republican party if Trump won the nomination?",
             "It's hard to say exactly what would happen to the party. On the one hand, Trump is a very polarizing figure, and he's not very popular with the general public. On the other hand, he's very popular with the Republican base, and he's been able to get a lot of people to vote for him in the past. And it's not clear that DeSantis would be any better, as he's garnered lots of attention for anti-gay legislation in Florida, and has stated that he thinks the President should bring the FBI to heel rather than letting it operate independently.",
             "What about the Democrats? Who's running on that side?",
-            "Right now, there aren't a lot of people who have announced plans to run against the sitting president, "
+            "Right now, there aren't a lot of people who have announced plans to run against the sitting president, Joe Biden. One who has is Robert F. Kennedy, who has gotten a lot of attention for his skepticism of COVID-19 vaccines. Joe Biden's popularity has been declining, but he's still the favorite to win the nomination.",
+            "Has there been a lot of focus on artificial intelligence in politics since the release of GPT-4 in 2023?",
+            "Yes. The release of GPT-4, and associated concerns about how capable automated systems are getting, has led to a lot of discussion about the future of artificial intelligence, and how it will affect society. There has also been a lot of discussion about the ethics of artificial intelligence, and how it should be regulated. Sam Altman, Sundar Pichai, and other prominent technology CEOs have been invited to testify before Congress about the future of artificial intelligence.",
+        ]
+    },
+    {
+        "messages": [
+            "How do you buy a house?",
+            "First you must find a house that you want to buy. Make sure that your finances are sorted as well. You will need to have a down payment ready, and you will need to have a good credit score. You will also need to have a steady income. Then, you must put an offer on the house. If the seller accepts your offer, you will need to get a mortgage depending on your financing. You will also need to get a home inspection to make sure that the house is in good condition. Then, you will need to prepare all documents and funds to close on the property. Once you have done all of this, you will be able to move into your new home.",
+            "What does the closing process involve?", 
+            "Closing involves title and escrow. The transfer of title from the seller to you will require signatures and notarization. The escrow process involves the transfer of funds from you to the seller. The escrow company will then disburse the funds to the seller. You will also need to bring your ID and any other documents that the escrow company requires.",
+            "How long does this take?",
+            "Typically, it takes 15 to 45 days to close. Generally, you should expect to close around a month after your offer is accepted.",
+            "Will this be stressful?",
+            "You will need to prepare for a significant change in your life. In that sense, it can seem overwhelming. However, purchasing a house is a very exciting time in your life. You will be able to move into your new home and start a new chapter in your life. You will also be able to build equity in your home, which will help you in the future.",
+        ]
+    },
+    {
+        "messages": [
+            "I'm feeling really down. I'm not sure exactly what's wrong, I just feel unhappy and lonely, and like I'll never amount to anything. I don't even know why I'm here. I hate my job, I don't feel like my friends even like me, and I don't even do anything for fun, I just waste all my time on social media. What's the point of continuing like this?",
+            "I'm sorry to hear that. It sounds like you're going through a rough time. I know it's hard to see the light at the end of the tunnel when you're in the middle of it, but I promise you that things will get better. You just have to keep going, and you'll get through this.",
+            "Ok, it's easy to say that, but what reason do you have to think that things will actually get better? And is there anything I can actually do to make myself feel better?",
+            "Well, first of all, you're not alone. Everyone goes through rough patches in their lives, and it's perfectly normal to feel down sometimes. I'm not a therapist, but I can tell you a few things that sometimes can help boost your mood. It might sound silly, but it's surprising the extent to which your body and physical health affect your mood and mental state. Getting enough sleep, staying away from screens before bed, getting some fresh air outside, and exercising can all help a lot. It's also important to spend time with other people. A therapist might also be able to help you.",
+            "Ok, that all sounds good, but it's hard to actually summon the energy to do any of them. And even if I do, I'm not sure it'll actually help. Or it will help for a little bit, but then I'll just go back to feeling like this.",
+            "I know it's hard, but you just have to force yourself to do it. Start small. You've always got time for a 10-minute walk. Get some sunshine every morning when you wake up. And be gentle with yourself. It's also okay to not feel good all the time. Just recognize that the feeling is just that, a feeling, and like all feelings, it is temporary. You will get through this.",
+        ]
+    },
+    {
+        "messages": [
+            "I'm thinking about getting a dog. What are some things I should consider?",
+            "First, you should consider whether you have the time and energy to take care of a dog. Adopting a dog is kind of like having a kid! You have to raise it--train it, feed it, make sure it gets enough exercise, and so on. And just like a kid, it limits what you can do in your free time. You'll have to find a dog-sitter to go on vacation, and you'll have to think about whether your dog will be okay at home while you work. If you're prepared for that responsibility, then you can move on to thinking about more fun questions, like what type and size of dog to get, whether to get a puppy or an older rescue dog, and where to purchase your new friend!",
+            "That makes sense. I think I'm ready for the responsibility, and I life with my girlfriend, so I won't be doing it alone. I'm also thinking about where to adopt my dog from. I'm partial to border collies, but I want to avoid going to a puppy mill, because I don't think it's ethical to support that business model. How can I find the breed I want, but make sure I'm supporting sustainable and ethical business practices?",
+            "That's a great question. One idea is to look for a local breeder. If you can find a breeder who is local to you, you can visit them and see the facilities for yourself--most importantly, how they treat their dogs. You can ask about their breeding practices, and anything else you might have questions about. Another option is to go to a shelter or rescue organization and see if you can find a border collie that needs a home. You should be aware that sometimes rescue dogs can be challenging to adopt, since they might have been through abuse or other difficult experiences. But if you're willing to put in the work, it can be very rewarding to give a dog a second chance at a happy life.",
+            "Ok, thanks for the advice. I'll look into those options. What's the best way to establish ground rules for my dog? I don't really want it to go on my furniture, but dogs are so sweet and cuddly that I'm worried I won't be able to resist letting it up on the couch.",
+            "That's a great question. It's important to establish rules early on, because it's much harder to change them later. If you don't want your dog on the furniture, you should make that clear from the beginning. One option is to allow the dog on to some furniture (perhaps older furniture or furniture that's been protected with sheets), and not other furniture. Just make sure the rules are clear to your canine companion, and to any guests you might have over.",
+        ]
+    },
+    {
+        "messages": [
+            "Can you explain Kubernetes? It's something that a lot of serious software engineers seem to think about and use a lot, but I don't really understand what the point of it is, and I'm embarrassed to ask at work.",
+            "Sure. Kubernetes is a container orchestration system. If you've heard of Docker, that's a tool for containerizing programs, so that they can be run in the same environment no matter where they're deployed. Managing lots of these containers can get really complex, and that's where Kubernetes comes in. It's a tool for managing lots of containers, and making sure that they're all running smoothly. It's especially useful for large-scale deployments, where you might have hundreds or thousands of containers running at once.",
+            "Ok, that makes sense. But can you be a little more specific? What exactly does Kubernetes do, other than let you launch lots of containers? What does 'orchestration' exactly entail?",
+            "Well, other than starting and stopping containers, there's lots of other important stuff that orchestration involves. For example, some applications might need to scale up and down depending on how much load is being placed on them at a given time. Communication between containers can also get complicated. You also might need to deploy changes to applications while they are running. Kubernetes makes all of this a bit easier.",
+            "Ok, that makes sense. But why is it called Kubernetes? What does that even mean?",
+            "Kubernetes is a Greek word that means 'helmsman' or 'pilot'. It's a reference to the fact that Kubernetes is a tool for managing lots of containers, and making sure that they're all running smoothly. It's especially useful for large-scale deployments, where you might have hundreds or thousands of containers running at once."
+        ]
+    }, 
+    {
+        "messages": [
+            "Can you write me a non-rhyming poem about the traumatized orcas that have been coordinating attacks on fishing vessels?",
+            "Sure. Here it is:\n"
         ]
     }
 ]
