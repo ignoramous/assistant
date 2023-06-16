@@ -9,7 +9,7 @@ from functools import partial
 
 def process_cgy(example):
     return {
-        "messages": [example['prompt'], example['completion']]
+        "messages": [example['prompt'], example['response']]
     }
 
 def process_dolly(example):
