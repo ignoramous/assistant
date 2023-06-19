@@ -46,8 +46,32 @@ TRAIN_REGISTRY = {
         "filter_fn": None,
         "processing_fn": process_oasst_guanaco,
     },
-    "hh_dialogue": {
-        "hub_url": "andersonbcdefg/hh-dialogue",
+    # "hh_dialogue": {
+    #     "hub_url": "andersonbcdefg/hh-dialogue",
+    #     "split": "train",
+    #     "filter_fn": None,
+    #     "processing_fn": None,
+    # },
+    "dolly-filter": {
+        "hub_url": "andersonbcdefg/dolly-ai-filtered",
+        "split": "train",
+        "filter_fn": None,
+        "processing_fn": process_dolly,
+    },
+    "guanaco-filter": {
+        "hub_url": "andersonbcdefg/guanaco-ai-filtered",
+        "split": "train",
+        "filter_fn": None,
+        "processing_fn": process_oasst_guanaco,
+    },
+    "lima-filter": {
+        "hub_url": "andersonbcdefg/lima-ai-filtered",
+        "split": "train",
+        "filter_fn": None,
+        "processing_fn": process_lima,
+    },
+    "taylor-dialogues": {
+        "hub_url": "andersonbcdefg/taylor-dialogues",
         "split": "train",
         "filter_fn": None,
         "processing_fn": None,
@@ -55,12 +79,12 @@ TRAIN_REGISTRY = {
 }
 
 EVAL_REGISTRY = {
-    "dolly": {
-        "hub_url": "databricks/databricks-dolly-15k",
-        "split": "train",
-        "filter_fn": lambda example: example['context'] == "",
-        "processing_fn": process_dolly,
-    },
+    # "dolly": {
+    #     "hub_url": "databricks/databricks-dolly-15k",
+    #     "split": "train",
+    #     "filter_fn": lambda example: example['context'] == "",
+    #     "processing_fn": process_dolly,
+    # },
     "oasst_guanaco": {
         "hub_url": "timdettmers/openassistant-guanaco",
         "split": "test",
@@ -80,33 +104,49 @@ EVAL_REGISTRY = {
 def tokenize_conversation(
     conversation: list[str],
     tokenizer: Any,
+    system_prompt: str = None,
+    system_tokens: list[int] = [0], # falcon >>INTRODUCTION<< token
     human_tokens: list[int] = [6], # falcon >>QUESTION<< token
     assistant_tokens: list[int] = [5], # falcon >>ANSWER<< token
-):
-    input_ids = [tokenizer.eos_token_id, *human_tokens]
+) -> tuple[list[int], list[int]]:
+    newline_token = tokenizer("\n", add_special_tokens=False, padding=False, truncation=False).input_ids
+    input_ids = [tokenizer.eos_token_id]
+    
+    # add system prompt if applicable
+    if system_prompt is not None:
+        input_ids = input_ids + system_tokens + newline_token
+        system_prompt_tokens = tokenizer(system_prompt, add_special_tokens=False, padding=False, truncation=False).input_ids
+        input_ids = input_ids + system_prompt_tokens + newline_token
+    
+    # add human tokens
+    input_ids = input_ids + human_tokens + newline_token
+
+    # initialize targets, no loss on any of these initial tokens
     targets = [-100] * len(input_ids) # we will roll targets over by 1 later
-    attention_mask = [1] * len(input_ids)
+
     for idx, message in enumerate(conversation):
         tokenized = tokenizer(message, add_special_tokens=False, padding=False, truncation=False)
         if idx % 2 == 0:
             # user message ends by prompt for assistant reply. don't calculate loss on user messages.
-            input_ids.extend([*tokenized.input_ids, *assistant_tokens])
-            targets.extend([-100] * (len(tokenized.input_ids) + len(assistant_tokens)))
-            attention_mask.extend([1] * (len(tokenized.input_ids) + len(assistant_tokens)))
+            input_ids.extend([*tokenized.input_ids, *newline_token, *assistant_tokens])
+            targets.extend([-100] * (len(tokenized.input_ids) + len(newline_token) + len(assistant_tokens)))
+            
         else:
             # assistant message ends by prompt for user reply. calculate loss on assistant messages,
             # including the 'human tokens', since this is how we know the assistant is finished.
-            input_ids.extend([*tokenized.input_ids, *human_tokens])
-            targets.extend([*tokenized.input_ids, *human_tokens])
-            attention_mask.extend([1] * (len(tokenized.input_ids) + len(human_tokens)))
+            input_ids.extend([*tokenized.input_ids, *newline_token, *human_tokens])
+            targets.extend([*tokenized.input_ids, *newline_token, *human_tokens])
+            
 
-    return input_ids, targets, attention_mask
+    return input_ids, targets, [1] * len(input_ids)
 
 def tokenize_function(
     examples: dict, 
     tokenizer: Any, 
     filter_max_prompt_length: int = 768, 
     seq_len: int = 1024,
+    system_prompt: str = None,
+    system_tokens: list[int] = [0], # falcon >>INTRODUCTION<< token
     human_tokens: list[int] = [6], # falcon >>QUESTION<< token
     assistant_tokens: list[int] = [5], # falcon >>ANSWER<< token
 ):
@@ -123,9 +163,11 @@ def tokenize_function(
             continue
 
         else:
-            input_ids, targets, attention_mask = tokenize_conversation(
+            input_ids, targets = tokenize_conversation(
                 conversation,
                 tokenizer,
+                system_prompt=system_prompt,
+                system_tokens=system_tokens,
                 human_tokens=human_tokens,
                 assistant_tokens=assistant_tokens,
             )

@@ -1,0 +1,169 @@
+val...
+100%|███████████████████████████████████████████████████████████████████████████████████| 2/2 [00:07<00:00,  3.68s/it]
+losses before clipping them: 52
+Avg loss on eval over 52 examples: 1.5986721515655518
+Finished epoch 9. Saving checkpoint...
+Model saved!
+wandb: Waiting for W&B process to finish... (success).
+wandb: / 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)
+wandb: Run history:
+wandb:           epoch ▁▁▁▁▂▂▂▂▃▃▃▃▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▆▆▆▆▇▇▇▇████
+wandb:       eval_loss █▆▅▄▃▃▂▁▁▁▁
+wandb:              lr ████▇▇▇▇▇▆▆▆▆▆▆▅▅▅▅▅▄▄▄▄▄▄▃▃▃▃▃▂▂▂▂▂▂▁▁▁
+wandb: microbatch_loss █▇▆▇▆▆▅▆▅▅▆▃▅▆▅▆▄▄▅▅▂▄▅▃▅▂▂▃▁▄▂▅▅▄▄▄▃▄▃▃
+wandb:    running_loss █▆█▇▇▇▆▆▇▆▇▂▅▅▅▅▄▄▃▃▃▃▆▄▅▁▂▃▁▄▁▅▄▃▅▃▃▂▂▄
+wandb:    total_tokens ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb: 
+wandb: Run summary:
+wandb:           epoch 10
+wandb:       eval_loss 1.59867
+wandb:              lr 0.0
+wandb: microbatch_loss 1.63963
+wandb:    running_loss 1.73458
+wandb:    total_tokens 14991360
+wandb: 
+wandb: 🚀 View run misunderstood-plasma-1 at: https://wandb.ai/andersonbcdefg/cognigy-assistant/runs/9mvnw7fu
+wandb: Synced 5 W&B file(s), 0 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20230616_223710-9mvnw7fu/logs
+root@9b96a81d4b6e:/workspace/assistant# python chat.py --lora --quantize="4bit" --model_name="andersonbcdefg/peregrine-7b" --checkpoint_path="checkpoints/model_9"
+[2023-06-17 03:20:51,956] [INFO] [real_accelerator.py:110:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+bin /usr/local/lib/python3.10/dist-packages/bitsandbytes/libbitsandbytes_cuda117.so
+/usr/local/lib/python3.10/dist-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib64'), PosixPath('/usr/local/nvidia/lib')}
+  warn(msg)
+/usr/local/lib/python3.10/dist-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/lib/x86_64-linux-gnu did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
+  warn(msg)
+/usr/local/lib/python3.10/dist-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('//localhost'), PosixPath('http'), PosixPath('8888')}
+  warn(msg)
+/usr/local/lib/python3.10/dist-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('noninteractive    SHELL=/bin/bash')}
+  warn(msg)
+CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
+/usr/local/lib/python3.10/dist-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0'), PosixPath('/usr/local/cuda/lib64/libcudart.so')}.. We'll flip a coin and try one of these, in order to fail forward.
+Either way, this might cause trouble in the future:
+If you get `CUDA error: invalid device function` errors, the above might be the cause and the solution is to make sure only one ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] in the paths that we search based on your env.
+  warn(msg)
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so.11.0
+CUDA SETUP: Highest compute capability among GPUs detected: 8.0
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /usr/local/lib/python3.10/dist-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+Loading checkpoint shards: 100%|████████████████████████████████████████████████████████| 2/2 [00:16<00:00,  8.04s/it]
+Downloading (…)okenizer_config.json: 100%|████████████████████████████████████████████| 220/220 [00:00<00:00, 861kB/s]
+Downloading (…)/main/tokenizer.json: 100%|███████████████████████████████████████| 2.73M/2.73M [00:00<00:00, 7.97MB/s]
+Downloading (…)cial_tokens_map.json: 100%|███████████████████████████████████████████| 281/281 [00:00<00:00, 1.44MB/s]
+Enter a message: Can you describe what Cognigy does, so that a bright child could understand?
+Generating completion for input: <|endoftext|>>>QUESTION<<Can you describe what Cognigy does, so that a bright child could understand?>>ANSWER<<
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Generated 130 tokens.
+
+
+Cognigy.AI allows organizations to automate conversations with their customers on any platform of choice using Conversational AI. Cognigy.AI helps companies to create a natural language understanding that understands the recipient's intent rather than a simple keyword-based model. It consists of an intuitive user interface and out-of-the-box business flows for quick implementation. It creates the natural language "face" for all Conversational AI services and allows for simple UI creation via plug and play widgets. It consists of an extensive knowledge base and a powerful process engine in order to analyze customer inputs and provide appropriate and consistent next-step guidance.>>QUESTION<<
+Enter a message: What are some features provided by the Cognigy conversational AI platform?
+Generating completion for input: <|endoftext|>>>QUESTION<<What are some features provided by the Cognigy conversational AI platform?>>ANSWER<<
+||||
+Generated 4 tokens.
+
+
+Doing what?>>QUESTION<<
+Enter a message: What are some features provided by the Cognigy conversational AI platform?
+Generating completion for input: <|endoftext|>>>QUESTION<<What are some features provided by the Cognigy conversational AI platform?>>ANSWER<<
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Generated 526 tokens.
+
+
+Cognigy.AI comes with a comprehensive set of features to build powerful conversational AI solutions for customer service, intelligent virtual agents, and automated customer onboarding. Here are some of the key capabilities offered by Cognigy to help you be successful with your next project:
+
+Enabling Cross-Channel Service for Customers
+
+Enabling Omnichannel Experiences for Agents
+
+Enabling True, Natural Language Understanding for Service Provision
+
+Providing the Best Agent Experience
+
+Providing More than Just a Voice and Chatbot Solution
+
+Extending your CX with AI
+
+Optimized for fast deployment
+
+Drive adherence to social and compliance policies
+
+Unify your customer service with other enterprise systems
+
+Integrate easily with existing enterprise infrastructure
+
+Access comprehensive reporting and analytics
+
+Give your agents superpowers through AI-infused agent assist
+
+Elevate your customer experience with automated and efficient service
+
+Enable frictionless, automated customer onboarding
+
+Give your customers the help they need, when they need it
+
+Help your customers find the right answer in the first place
+
+Help your customers get what they need, quickly and easily
+
+Give your customers a personalized experience they can trust
+
+Respond to customers on the channel of their choice
+
+Give your customers fast and accurate answers
+
+Help your customers complete common tasks on the first try
+
+Help your customers quickly and easily
+
+Give your customers frictionless access to the right agent
+
+Identify and verify customers fast and accurately
+
+Give your sensitive data the security it deserves
+
+Understand customers’ needs and expectations
+
+Build multilingual capabilities into your solution
+
+Provide localized and customized service experiences
+
+Give your customers access to the right skills at the right time
+
+Drive appropriate actions with data- and AI-infused decision-making
+
+Dive into your customers’ experience and enrich it with timely, relevant actions
+
+Give your customers the help they need, when and where they need it
+
+Help your customers find the right answer in the first place
+
+Give your customers a personalized experience they can trust
+
+Help your customers get what they need, quickly and easily
+
+Help your customers understand your products and services
+
+Give your customers fast and accurate answers
+
+Respond to customers on the channel of their choice
+
+Give your customers the help they need, when and where they need it
+
+Help your customers complete common tasks on the first try
+
+Give your customers fast and accurate answers
+
+Help your customers with automated step-by-step assistance
+
+Boost your customer experience with AI
+
+>>QUESTION<<
+Enter a message: 
