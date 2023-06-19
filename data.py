@@ -163,7 +163,7 @@ def tokenize_function(
             continue
 
         else:
-            input_ids, targets = tokenize_conversation(
+            input_ids, targets, _ = tokenize_conversation(
                 conversation,
                 tokenizer,
                 system_prompt=system_prompt,
