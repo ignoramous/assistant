@@ -34,18 +34,18 @@ def process_alpaca(example):
     }
 
 TRAIN_REGISTRY = {
-    "lima": {
-        "hub_url": "GAIR/lima",
-        "split": "train",
-        "filter_fn": None,
-        "processing_fn": process_lima,
-    },
-    "oasst_guanaco": {
-        "hub_url": "timdettmers/openassistant-guanaco",
-        "split": "train",
-        "filter_fn": None,
-        "processing_fn": process_oasst_guanaco,
-    },
+    # "lima": {
+    #     "hub_url": "GAIR/lima",
+    #     "split": "train",
+    #     "filter_fn": None,
+    #     "processing_fn": process_lima,
+    # },
+    # "oasst_guanaco": {
+    #     "hub_url": "timdettmers/openassistant-guanaco",
+    #     "split": "train",
+    #     "filter_fn": None,
+    #     "processing_fn": process_oasst_guanaco,
+    # },
     # "hh_dialogue": {
     #     "hub_url": "andersonbcdefg/hh-dialogue",
     #     "split": "train",
@@ -183,8 +183,10 @@ def tokenize_function(
         pad_token = tokenizer.pad_token_id
         if pad_token is None: pad_token = tokenizer.eos_token_id
 
+        # roll the targets
         if len(input_ids) == seq_len:
             targets = targets[1:] + [-100]
+
         elif len(input_ids) < seq_len:
             input_ids.extend([pad_token] * (seq_len - len(input_ids)))
             targets.extend([-100] * (seq_len - len(targets) + 1))
