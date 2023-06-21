@@ -142,6 +142,10 @@ def train(
                 model,
                 lora_ckpt_path,
             )
+            # mark the lora params as trainable
+            for n, p in model.named_parameters():
+                if "lora" in n:
+                    p.requires_grad = True
         
         print_trainable_parameters(model)
 
