@@ -4,7 +4,7 @@ import fire
 import torch
 import wandb
 from accelerate import Accelerator
-from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
+from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model, PeftModel
 from transformers import AutoConfig, AutoModelForCausalLM, BitsAndBytesConfig
 
 from eval import evaluate
@@ -31,6 +31,7 @@ def train(
     lora: bool = False,
     lora_layers: list[str] = ["query_key_value", "dense_h_to_4h", "dense_4h_to_h"],
     lora_dropout: float = 0.05,
+    lora_ckpt_path: str = None,
     mixed_precision: str = "bf16",
     hidden_dropout_prob: float = 0.1,
     attn_dropout_prob: float = 0.1,
@@ -126,7 +127,7 @@ def train(
         if quantize is not None:
             model = prepare_model_for_kbit_training(model)
 
-        if lora:
+        if lora and not lora_ckpt_path:
             lora_config = LoraConfig(
                 r=8, 
                 lora_alpha=32, 
@@ -136,6 +137,11 @@ def train(
                 task_type="CAUSAL_LM",
             )
             model = get_peft_model(model, lora_config)
+        elif lora and lora_ckpt_path:
+            model = PeftModel.from_pretrained(
+                model,
+                lora_ckpt_path,
+            )
         
         print_trainable_parameters(model)
 
