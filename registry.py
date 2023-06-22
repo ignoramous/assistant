@@ -1,3 +1,32 @@
+import re
+
+# For this training pipeline, preprocessing should simply return a list of strings.
+# The first string is assumed to be from the user, the second from the assistant,
+# and so on. If messages don't alternate, you've gotta process them so they do.
+def process_lima(example):
+    return {
+        "messages": example['conversations']
+    }
+
+def process_oasst_guanaco(example):
+    text = example['text']
+    messages = re.split(r'### Human:|### Assistant:', text)
+    messages = [m.strip() for m in messages if m.strip() != '']
+    return {
+        "messages": messages
+    }
+
+def process_dolly(example):
+    return {
+        "messages": [example['instruction'], example['response']]
+    }
+
+def process_alpaca(example):
+    return {
+        "messages": [example['instruction'], example['output']]
+    }
+
+
 TRAIN_REGISTRY = {
     "lima": {
         "hub_url": "GAIR/lima",
@@ -42,6 +71,9 @@ TRAIN_REGISTRY = {
         "processing_fn": None,
     }
 }
+
+# eventually, include company-specific datasets here
+FINETUNE_REGISTRY = {}
 
 EVAL_REGISTRY = {
     "dolly": {
